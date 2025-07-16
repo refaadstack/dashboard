@@ -43,7 +43,23 @@ export default function AdminItem() {
   const itemFields = [
     { name: "name", label: "Nama Item", type: "text" },
     { name: "volume", label: "Volume", type: "number" },
-    { name: "satuan", label: "Satuan", type: "text" },
+    {
+      name: "satuan",
+      label: "Satuan",
+      type: "select",
+      options: [
+        { value: "pcs", label: "pcs" },
+        { value: "kg", label: "kg" },
+        { value: "m", label: "m" },
+        { value: "m2", label: "m2" },
+        { value: "m3", label: "m3" },
+        { value: "unit", label: "unit" },
+        { value: "set", label: "set" },
+        { value: "box", label: "box" },
+        { value: "roll", label: "roll" },
+      ],
+      required: true,
+    },
     { name: "harga_satuan", label: "Harga Satuan", type: "integer" },
   ];
 

@@ -44,10 +44,12 @@ export default function AdminNavbar() {
 
       {/* Desktop menu */}
       <ul className={`${isOpen ? 'flex' : 'hidden'} flex-col space-y-2 w-full sm:flex sm:flex-row sm:space-x-4 sm:space-y-0 sm:w-auto mt-2 sm:mt-0 items-start`}>
+        <li><Link to="/admin/" onClick={closeMenu} className="block hover:underline">🏚 Dashboard</Link></li>
         <li><Link to="/admin/vendor" onClick={closeMenu} className="block hover:underline">📦 Vendor</Link></li>
         <li><Link to="/admin/item" onClick={closeMenu} className="block hover:underline">📋 Items</Link></li>
         <li><Link to="/admin/project" onClick={closeMenu} className="block hover:underline">📁 Projects</Link></li>
         <li><Link to="/admin/users" onClick={closeMenu} className="block hover:underline">👤 Users</Link></li>
+        <li><Link to="/admin/boq" onClick={closeMenu} className="block hover:underline">📊 BOQ</Link></li>
         <li>
           <button
             onClick={() => {

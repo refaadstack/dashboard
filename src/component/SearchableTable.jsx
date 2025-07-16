@@ -27,7 +27,7 @@ export default function SearchableTable({ columns, data }) {
                 {col.label}
               </th>
             ))}
-            <th className="border px-2 py-1">Aksi</th>
+            <th className="border px-2 py-1">Action</th>
           </tr>
         </thead>
         <tbody>

@@ -10,6 +10,7 @@ import AdminVendor from './pages/AdminVendor';
 import AdminItem from './pages/AdminItem';
 import AdminProject from './pages/AdminProject';
 import AdminPanel from './pages/AdminPanel';
+import AdminBoq from './pages/AdminBoq';
 import AdminUser from './pages/AdminUser';
 import Dashboard from './pages/Dashboard';
 
@@ -65,6 +66,14 @@ function App() {
               element={
                 <AdminProtectedRoute>
                   <AdminProject />
+                </AdminProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/boq" 
+              element={
+                <AdminProtectedRoute>
+                  <AdminBoq />
                 </AdminProtectedRoute>
               } 
             />
