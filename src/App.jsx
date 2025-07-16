@@ -6,6 +6,7 @@ import AdminProtectedRoute from './component/AdminProtectedRoute';
 
 // Import pages
 import Login from './pages/Login';
+import Register from './pages/Register';
 import AdminVendor from './pages/AdminVendor';
 import AdminItem from './pages/AdminItem';
 import AdminProject from './pages/AdminProject';
@@ -22,6 +23,7 @@ function App() {
           <Routes>
             {/* Public Routes */}
             <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
             
             {/* Protected Routes for Regular Users */}
             <Route 
