@@ -8,7 +8,7 @@ import ActionButton from "../component/ActionButton.jsx";
 import Swal from "sweetalert2";
 import { useAuth } from "../context/AuthContext.jsx";
 
-const API_BASE_URL = "http://localhost:5000/api/auth/users";
+const API_BASE_URL = "/api/auth/users";
 
 export default function AdminUser() {
   const { token } = useAuth();

@@ -63,7 +63,7 @@ export default function Admin() {
       try {
         console.log("Fetching vendors stats with token:", token); // Debug
         // Fetch vendors stats
-        const vendorsResponse = await fetch('http://localhost:3002/api/vendors/stats/summary', {
+        const vendorsResponse = await fetch('/api/vendors/stats/summary', {
           headers,
           credentials: 'include'
         });
@@ -98,7 +98,7 @@ export default function Admin() {
       try {
         console.log("Fetching items stats with token:", token); // Debug
         // Fetch items stats
-        const itemsResponse = await fetch('http://localhost:3003/api/items/stats/summary', {
+        const itemsResponse = await fetch('/api/items/stats/summary', {
           headers,
           credentials: 'include'
         });
@@ -133,7 +133,7 @@ export default function Admin() {
       try {
         console.log("Fetching projects stats with token:", token); // Debug
         // Fetch projects stats
-        const projectsResponse = await fetch('http://localhost:3004/api/projects/stats/summary', {
+        const projectsResponse = await fetch('/api/projects/stats/summary', {
           headers,
           credentials: 'include'
         });
@@ -168,7 +168,7 @@ export default function Admin() {
       try {
         console.log("Fetching auth stats with token:", token); // Debug
         // Fetch auth/users stats
-        const authResponse = await fetch('http://localhost:5000/api/auth/stats', {
+        const authResponse = await fetch('/api/auth/stats', {
           headers,
           credentials: 'include'
         });

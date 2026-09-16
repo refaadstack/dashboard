@@ -9,7 +9,7 @@ import Swal from "sweetalert2";
 import { useAuth } from "../context/AuthContext.jsx";
 
 // Constants
-const API_BASE_URL = "http://localhost:3002/api/vendors";
+const API_BASE_URL = "/api/vendors";
 
 export default function AdminVendor() {
   const { token } = useAuth();

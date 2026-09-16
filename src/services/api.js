@@ -1,9 +1,9 @@
 // services/api.js
 
 const API_BASE_URLS = {
-  auth: 'http://localhost:5000',
-  item: 'http://localhost:3003',
-  project: 'http://localhost:3004'
+  auth: '',
+  item: '',
+  project: ''
 };
 
 // Helper function untuk handle API calls

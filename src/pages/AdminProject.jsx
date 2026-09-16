@@ -8,8 +8,8 @@ import Swal from "sweetalert2";
 import { useAuth } from "../context/AuthContext.jsx";
 import Modal from "../component/Modal.jsx";
 
-const API_BASE_URL = "http://localhost:3004/api/projects";
-const ITEM_API_BASE_URL = "http://localhost:3003/api/items";
+const API_BASE_URL = "/api/projects";
+const ITEM_API_BASE_URL = "/api/items";
 
 export default function AdminProject() {
   const { token } = useAuth();

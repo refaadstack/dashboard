@@ -6,10 +6,10 @@ import Swal from "sweetalert2";
 
 // API Configuration
 const API_CONFIG = {
-  PROJECTS: "http://localhost:3004/api/projects",
-  BOQ: "http://localhost:3005/api/boq",
-  ITEMS: "http://localhost:3003/api/items",
-  CATEGORIES: "http://localhost:3005/api/categories",
+  PROJECTS: "/api/projects",
+  BOQ: "/api/boq",
+  ITEMS: "/api/items",
+  CATEGORIES: "/api/categories",
 };
 
 // Loading states enum
