@@ -60,7 +60,9 @@ git clone https://github.com/refaadstack/BE-BOQ-service.git
 ```
 
 Struktur akhir folder `C:\boq` harus berisi 6 folder di atas **plus** 3 file
-infra di bawah ini (tidak ada di git, buat manual).
+infra di bawah ini. Cara cepat: copy dari repo dashboard
+(`dashboard/deploy/` -> `C:\boq/`); cara manual: buat sesuai isi di bawah
+(identik dengan isi `deploy/`).
 
 ---
 

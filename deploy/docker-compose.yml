@@ -1,0 +1,167 @@
+# BOQ stack — staging kaelserver + template portable contributor/device lain.
+# dashboard 8090 | auth 8091 | vendor 8092 | item 8093 | project 8094 | boq 8095
+# mysql-boq hanya di 127.0.0.1:3307
+
+services:
+  mysql-boq:
+    image: mysql:8.4
+    container_name: boq-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - mysql_boq_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - 127.0.0.1:3307:3306
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+  auth:
+    build: ./BE-Auth-Service
+    container_name: boq-auth
+    restart: unless-stopped
+    depends_on:
+      mysql-boq:
+        condition: service_healthy
+    environment:
+      PORT: 5000
+      DB_HOST: mysql-boq
+      DB_PORT: 3306
+      DB_NAME: auth_service
+      DB_USER: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      JWT_SECRET_KEY: ${JWT_SECRET}
+      CORS_ORIGIN: ${CORS_ORIGIN}
+    ports:
+      - 8091:5000
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  vendor:
+    build: ./vendor_service
+    container_name: boq-vendor
+    restart: unless-stopped
+    depends_on:
+      mysql-boq:
+        condition: service_healthy
+    environment:
+      PORT: 3002
+      DB_HOST: mysql-boq
+      DB_PORT: 3306
+      DB_NAME: vendor_service
+      DB_USER: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      JWT_SECRET_KEY: ${JWT_SECRET}
+      CORS_ORIGIN: ${CORS_ORIGIN}
+    ports:
+      - 8092:3002
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  item:
+    build: ./BE-Item-Service
+    container_name: boq-item
+    restart: unless-stopped
+    depends_on:
+      mysql-boq:
+        condition: service_healthy
+    environment:
+      PORT: 3003
+      DB_HOST: mysql-boq
+      DB_PORT: 3306
+      DB_NAME: item_service
+      DB_USER: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      JWT_SECRET_KEY: ${JWT_SECRET}
+      CORS_ORIGIN: ${CORS_ORIGIN}
+    ports:
+      - 8093:3003
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  project:
+    build: ./BE-Project-service
+    container_name: boq-project
+    restart: unless-stopped
+    depends_on:
+      mysql-boq:
+        condition: service_healthy
+    environment:
+      PORT: 3004
+      DB_HOST: mysql-boq
+      DB_PORT: 3306
+      DB_NAME: project_service
+      DB_USER: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      JWT_SECRET_KEY: ${JWT_SECRET}
+      CORS_ORIGIN: ${CORS_ORIGIN}
+      ITEM_SERVICE_URL: http://item:3003
+    ports:
+      - 8094:3004
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  boq:
+    build: ./BE-BOQ-service
+    container_name: boq-service
+    restart: unless-stopped
+    depends_on:
+      mysql-boq:
+        condition: service_healthy
+    environment:
+      PORT: 3005
+      NODE_ENV: production
+      DB_HOST: mysql-boq
+      DB_PORT: 3306
+      DB_NAME: boq_service
+      DB_USER: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_SECRET_KEY: ${JWT_SECRET}
+      JWT_EXPIRES_IN: 24h
+      AUTH_SERVICE_URL: http://auth:5000
+      PROJECT_SERVICE_URL: http://project:3004
+      ITEM_SERVICE_URL: http://item:3003
+      VENDOR_SERVICE_URL: http://vendor:3002
+      CORS_ORIGIN: ${CORS_ORIGIN}
+      UPLOAD_DIR: /app/uploads
+    volumes:
+      - boq_uploads:/app/uploads
+    ports:
+      - 8095:3005
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+  dashboard:
+    build: ./dashboard
+    container_name: boq-dashboard
+    restart: unless-stopped
+    depends_on: [auth, vendor, item, project, boq]
+    ports:
+      - 8090:80
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+
+volumes:
+  mysql_boq_data:
+  boq_uploads:
