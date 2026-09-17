@@ -26,7 +26,7 @@ const LoadingSpinner = ({ size = "sm" }) => (
 );
 
 export default function AdminBoq() {
-  const { token } = useAuth();
+  const { token, user: me } = useAuth();
   const axiosConfig = useMemo(() => ({
     headers: { Authorization: `Bearer ${token}` },
     withCredentials: true,
@@ -340,6 +340,10 @@ export default function AdminBoq() {
 
   const totals = detail?.totals || { grandTotal: 0, itemCount: 0, sectionTotals: [] };
 
+  // Opsi kolom internal hanya untuk pemegang izin (token lama tanpa klaim tetap boleh).
+  const myPerms = me?.permissions;
+  const canSeeCost = !Array.isArray(myPerms) || myPerms.includes("*") || myPerms.includes("boq.export.internal");
+
   const itemsBySection = useMemo(() => {
     const map = {};
     (detail?.items || []).forEach((it) => {
@@ -585,7 +589,7 @@ export default function AdminBoq() {
                   </div>
                   <p className="mt-4 text-sm font-medium text-gray-700">Blok yang ditampilkan {exportFormat === "pdf" ? "(PDF)" : "(Excel selalu lengkap)"}:</p>
                   <div className="mt-2 space-y-2">
-                    {OPT_LABELS.map(([key, label]) => (
+                    {OPT_LABELS.filter(([key]) => key !== "cost" || canSeeCost).map(([key, label]) => (
                       <label key={key} className={`flex items-center gap-2 text-sm ${exportFormat === "pdf" ? "text-gray-700" : "text-gray-400"}`}>
                         <input
                           type="checkbox"
@@ -597,6 +601,9 @@ export default function AdminBoq() {
                         {label}
                       </label>
                     ))}
+                    {!canSeeCost && (
+                      <p className="text-xs text-gray-400">Opsi kolom internal disembunyikan karena akun ini tidak punya izin boq.export.internal.</p>
+                    )}
                   </div>
                   <div className="mt-5 flex justify-end gap-2">
                     <button onClick={() => setExportOpen(false)} className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100">

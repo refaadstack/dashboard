@@ -12,6 +12,7 @@ import AdminProject from './pages/AdminProject';
 import AdminPanel from './pages/AdminPanel';
 import AdminBoq from './pages/AdminBoq';
 import AdminUser from './pages/AdminUser';
+import AdminRole from './pages/AdminRole';
 import Dashboard from './pages/Dashboard';
 import Panduan from './pages/Panduan';
 import AdminPengaturan from './pages/AdminPengaturan';
@@ -95,6 +96,15 @@ function App() {
                   <AdminUser />
                 </AdminProtectedRoute>
               } 
+            />
+            
+            <Route
+              path="/admin/roles"
+              element={
+                <AdminProtectedRoute>
+                  <AdminRole />
+                </AdminProtectedRoute>
+              }
             />
             
             <Route
