@@ -12,8 +12,6 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Get the page user was trying to access
-  const from = location.state?.from?.pathname || '/dashboard';
 
   useEffect(() => {
     // Show message if user was redirected from protected route

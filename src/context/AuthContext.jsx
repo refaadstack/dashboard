@@ -1,5 +1,6 @@
 // src/context/AuthContext.jsx
 import { createContext, useContext, useState, useEffect } from 'react';
+import { decodeToken, isTokenExpired } from './tokenUtils';
 
 const AuthContext = createContext();
 
@@ -11,37 +12,6 @@ export const useAuth = () => {
   return context;
 };
 
-// Helper function to decode JWT token (optional)
-const decodeToken = (token) => {
-  try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split('')
-        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join('')
-    );
-    return JSON.parse(jsonPayload);
-  } catch (error) {
-    console.error('Error decoding token:', error);
-    return null;
-  }
-};
-
-// Helper function to check if token is expired
-const isTokenExpired = (token) => {
-  try {
-    const decoded = decodeToken(token);
-    if (!decoded || !decoded.exp) return true;
-    
-    const currentTime = Date.now() / 1000;
-    return decoded.exp < currentTime;
-  } catch (error) {
-    return true;
-  }
-};
-
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
@@ -50,23 +20,33 @@ export const AuthProvider = ({ children }) => {
   // Initialize auth state from localStorage
   useEffect(() => {
     const savedToken = localStorage.getItem('authToken');
-    
+
     if (savedToken) {
-      // Check if token is expired
       if (isTokenExpired(savedToken)) {
-        // Token expired, clear it
         localStorage.removeItem('authToken');
         setToken(null);
         setUser(null);
       } else {
-        // Token valid, set it and decode user info
         setToken(savedToken);
-        const userInfo = decodeToken(savedToken);
-        setUser(userInfo);
+        setUser(decodeToken(savedToken));
       }
     }
-    
+
     setIsLoading(false);
+
+    // Logout in all tabs when one tab logs out or clears the token
+    const onStorage = (event) => {
+      if (event.key !== 'authToken') return;
+      if (event.newValue) {
+        setToken(event.newValue);
+        setUser(decodeToken(event.newValue));
+      } else {
+        setToken(null);
+        setUser(null);
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
   }, []);
 
   // Login function - hanya terima token

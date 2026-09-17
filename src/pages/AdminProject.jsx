@@ -4,6 +4,8 @@ import AdminNavbar from "../component/AdminNavbar.jsx";
 import FormModal from "../component/FormModal.jsx";
 import SearchableTable from "../component/SearchableTable.jsx";
 import ActionButton from "../component/ActionButton.jsx";
+import RowActions from "../component/RowActions.jsx";
+import ItemPicker from "../component/ItemPicker.jsx";
 import Swal from "sweetalert2";
 import { useAuth } from "../context/AuthContext.jsx";
 import Modal from "../component/Modal.jsx";
@@ -39,17 +41,23 @@ export default function AdminProject() {
   const [editUnitPrice, setEditUnitPrice] = useState("");
   const [editNotes, setEditNotes] = useState("");
 
-  console.log("AdminProject - Current token:", token);
+  // Project vendors (penugasan vendor ke proyek)
+  const [projectVendors, setProjectVendors] = useState([]);
+  const [vendorList, setVendorList] = useState([]);
+  const [assignVendorId, setAssignVendorId] = useState("");
+  const [assignScope, setAssignScope] = useState("");
+
 
   const fetchProjects = useCallback(async () => {
     try {
       const res = await axios.get(API_BASE_URL, {
+        params: { limit: 500 },
         headers: { Authorization: `Bearer ${token}` },
         withCredentials: true,
       });
       const projectsData = res.data?.data?.projects || res.data || [];
       setProjects(projectsData);
-    } catch (err) {
+    } catch {
       Swal.fire("Error", "Gagal mengambil data project.", "error");
     }
   }, [token]);
@@ -58,12 +66,13 @@ export default function AdminProject() {
     setLoadingItems(true);
     try {
       const res = await axios.get(ITEM_API_BASE_URL, {
+        params: { limit: 500 },
         headers: { Authorization: `Bearer ${token}` },
         withCredentials: true,
       });
       const itemsData = res.data?.data?.items || res.data || [];
       setItemsList(itemsData);
-    } catch (err) {
+    } catch {
       Swal.fire("Error", "Gagal mengambil data item.", "error");
     } finally {
       setLoadingItems(false);
@@ -113,7 +122,7 @@ export default function AdminProject() {
       });
       Swal.fire("Terhapus!", "Project berhasil dihapus.", "success");
       fetchProjects();
-    } catch (err) {
+    } catch {
       Swal.fire("Error", "Gagal menghapus project.", "error");
     }
   };
@@ -126,7 +135,7 @@ export default function AdminProject() {
         withCredentials: true,
       });
       setProjectDetail(res.data.data);
-    } catch (err) {
+    } catch {
       Swal.fire("Error", "Gagal mengambil detail project.", "error");
       setShowDetailModal(false);
     } finally {
@@ -134,11 +143,40 @@ export default function AdminProject() {
     }
   };
 
+  const fetchProjectVendors = useCallback(async (projectId) => {
+    try {
+      const res = await axios.get(`${API_BASE_URL}/${projectId}/vendors`, {
+        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
+      });
+      setProjectVendors(res.data?.data || []);
+    } catch {
+      setProjectVendors([]);
+    }
+  }, [token]);
+
+  const fetchVendorList = useCallback(async () => {
+    try {
+      const res = await axios.get("/api/vendors", {
+        params: { limit: 500, status: "active" },
+        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
+      });
+      setVendorList(res.data?.data?.vendors || []);
+    } catch {
+      setVendorList([]);
+    }
+  }, [token]);
+
   const handleDetail = (project) => {
     setShowDetailModal(true);
     fetchProjectDetail(project.id);
+    fetchProjectVendors(project.id);
+    fetchVendorList();
     resetAddItemForm();
     resetEditingState();
+    setAssignVendorId("");
+    setAssignScope("");
   };
 
   const resetAddItemForm = () => {
@@ -191,7 +229,7 @@ export default function AdminProject() {
       Swal.fire("Berhasil", "Item berhasil ditambahkan.", "success");
       fetchProjectDetail(projectDetail.id);
       resetAddItemForm();
-    } catch (err) {
+    } catch {
       Swal.fire("Error", "Gagal menambahkan item.", "error");
     }
   };
@@ -229,7 +267,7 @@ export default function AdminProject() {
       Swal.fire("Berhasil", "Item berhasil diupdate.", "success");
       fetchProjectDetail(projectDetail.id);
       resetEditingState();
-    } catch (err) {
+    } catch {
       Swal.fire("Error", "Gagal mengupdate item.", "error");
     }
   };
@@ -251,8 +289,53 @@ export default function AdminProject() {
       });
       Swal.fire("Terhapus!", "Item berhasil dihapus dari project.", "success");
       fetchProjectDetail(projectDetail.id);
-    } catch (err) {
+    } catch {
       Swal.fire("Error", "Gagal menghapus item.", "error");
+    }
+  };
+
+  const handleAssignVendor = async () => {
+    if (!assignVendorId) {
+      Swal.fire("Error", "Pilih vendor terlebih dahulu.", "error");
+      return;
+    }
+    const v = vendorList.find((x) => String(x.id) === String(assignVendorId));
+    try {
+      await axios.post(`${API_BASE_URL}/${projectDetail.id}/vendors`, {
+        vendor_id: Number(assignVendorId),
+        vendor_name: v?.name || "",
+        scope: assignScope || null,
+      }, {
+        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
+      });
+      Swal.fire("Berhasil", "Vendor ditugaskan ke proyek.", "success");
+      setAssignVendorId("");
+      setAssignScope("");
+      fetchProjectVendors(projectDetail.id);
+    } catch (err) {
+      Swal.fire("Error", err.response?.data?.message || "Gagal menugaskan vendor.", "error");
+    }
+  };
+
+  const handleRemoveVendor = async (row) => {
+    const result = await Swal.fire({
+      title: `Hapus ${row.vendor_name} dari proyek?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Ya, hapus!",
+      cancelButtonText: "Batal",
+    });
+    if (!result.isConfirmed) return;
+    try {
+      await axios.delete(`${API_BASE_URL}/${projectDetail.id}/vendors/${row.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
+      });
+      Swal.fire("Terhapus!", "Vendor dihapus dari proyek.", "success");
+      fetchProjectVendors(projectDetail.id);
+    } catch {
+      Swal.fire("Error", "Gagal menghapus penugasan vendor.", "error");
     }
   };
 
@@ -405,6 +488,59 @@ export default function AdminProject() {
     </div>
   );
 
+  const renderVendorsSection = () => (
+    <div className="bg-white border rounded-lg p-6 mb-6">
+      <h3 className="text-lg font-semibold mb-1">Vendor Proyek</h3>
+      <p className="text-sm text-gray-500 mb-4">Vendor yang ditugaskan ke proyek ini bisa dipilih di tiap item BOQ.</p>
+      {projectVendors.length > 0 ? (
+        <ul className="space-y-2 mb-4">
+          {projectVendors.map((pv) => (
+            <li key={pv.id} className="flex flex-wrap items-center justify-between gap-2 border rounded px-3 py-2 text-sm">
+              <div>
+                <b>{pv.vendor_name}</b>
+                {pv.scope && <span className="text-gray-600"> — {pv.scope}</span>}
+                <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-semibold ${pv.status === "done" ? "bg-green-200 text-green-900" : pv.status === "active" ? "bg-blue-200 text-blue-900" : "bg-gray-200 text-gray-700"}`}>
+                  {pv.status === "done" ? "Selesai" : pv.status === "active" ? "Aktif" : "Ditugaskan"}
+                </span>
+              </div>
+              <button onClick={() => handleRemoveVendor(pv)} className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm transition-colors">
+                Hapus
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-sm text-gray-500 mb-4">Belum ada vendor ditugaskan.</p>
+      )}
+      <div className="flex flex-col md:flex-row gap-2">
+        <select
+          className="flex-1 border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          value={assignVendorId}
+          onChange={(e) => setAssignVendorId(e.target.value)}
+        >
+          <option value="">Pilih vendor aktif...</option>
+          {vendorList
+            .filter((v) => !projectVendors.some((pv) => String(pv.vendor_id) === String(v.id)))
+            .map((v) => (
+              <option key={v.id} value={v.id}>{v.name}{v.category ? ` (${v.category})` : ""}</option>
+            ))}
+        </select>
+        <input
+          className="flex-1 border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          placeholder="Lingkup pekerjaan (cth: Pemasangan AC Lt.1)"
+          value={assignScope}
+          onChange={(e) => setAssignScope(e.target.value)}
+        />
+        <button onClick={handleAssignVendor} className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded text-sm transition-colors">
+          Tugaskan
+        </button>
+      </div>
+      {vendorList.length === 0 && (
+        <p className="text-xs text-amber-600 mt-2">Tidak ada vendor aktif. Tambahkan dulu di halaman Vendor.</p>
+      )}
+    </div>
+  );
+
   const renderAddItemForm = () => (
     <div className="bg-white border rounded-lg p-6 mb-6">
       <h3 className="text-lg font-semibold mb-4">Add New Item</h3>
@@ -415,20 +551,18 @@ export default function AdminProject() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Select Item
+                Cari Item
               </label>
-              <select
+              <ItemPicker
+                items={itemsList}
                 value={newItemId}
-                onChange={(e) => setNewItemId(e.target.value)}
-                className="w-full border border-gray-300 p-3 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="">Select item</option>
-                {itemsList.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.name} - {item.satuan}
-                  </option>
-                ))}
-              </select>
+                placeholder="Ketik nama item..."
+                onSelect={(item) => {
+                  setNewItemId(item ? item.id : "");
+                  setNewUnitPrice(item && item.harga_satuan != null ? String(item.harga_satuan) : "");
+                }}
+              />
+              <p className="mt-1 text-xs text-gray-500">Harga terisi otomatis dari database, bisa diubah manual.</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -574,23 +708,14 @@ export default function AdminProject() {
                     start_date: formatDate(project.start_date),
                     end_date: formatDate(project.end_date),
                     actions: (
-                      <div className="flex flex-wrap gap-2 justify-center">
-                        <ActionButton
-                          label="Detail"
-                          onClick={() => handleDetail(project)}
-                          variant="info"
-                        />
-                        <ActionButton
-                          label="Edit"
-                          onClick={() => handleEdit(project)}
-                          variant="edit"
-                        />
-                        <ActionButton
-                          label="Delete"
-                          onClick={() => handleDelete(project)}
-                          variant="delete"
-                        />
-                      </div>
+                      <RowActions
+                        onDetail={() => handleDetail(project)}
+                        onEdit={() => handleEdit(project)}
+                        onDelete={() => handleDelete(project)}
+                        detailTitle="Detail"
+                        editTitle="Edit"
+                        deleteTitle="Delete"
+                      />
                     ),
                   }))}
                   columns={[
@@ -598,7 +723,7 @@ export default function AdminProject() {
                     { key: "description", label: "Description" },
                     { key: "start_date", label: "Start Date" },
                     { key: "end_date", label: "End Date" },
-                    { key: "budget", label: "Budget" }
+                    { key: "budget", label: "Budget", align: "right", numeric: true }
                   ]}
                 />
               </div>
@@ -621,6 +746,7 @@ export default function AdminProject() {
               ) : projectDetail ? (
                 <>
                   {renderProjectInfo()}
+                  {renderVendorsSection()}
                   {renderItemsTable()}
                   {renderAddItemForm()}
                   {renderTotalValue()}

@@ -5,6 +5,7 @@ import AdminNavbar from "../component/AdminNavbar.jsx";
 import FormModal from "../component/FormModal.jsx";
 import SearchableTable from "../component/SearchableTable.jsx";
 import ActionButton from "../component/ActionButton.jsx";
+import RowActions from "../component/RowActions.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import Swal from "sweetalert2";
 
@@ -18,17 +19,15 @@ export default function AdminItem() {
   const [selectedItem, setSelectedItem] = useState(null);
 
   // Debug: cek token
-  console.log("AdminItem - Current token:", token);
 
   const fetchItems = useCallback(async () => {
     try {
-      console.log("Fetching items with token:", token); // Debug
       const res = await axios.get(API_BASE_URL, {
+        params: { limit: 500 },
         headers: { Authorization: `Bearer ${token}` },
         withCredentials: true,
       });
       const itemsData = res.data?.data?.items || [];
-      console.log("Items fetched:", itemsData); // Debug
       setItems(itemsData);
     } catch (err) {
       console.error("Error fetching items:", err.response || err); // Debug
@@ -64,14 +63,12 @@ export default function AdminItem() {
   ];
 
   const handleAdd = () => {
-    console.log("Opening add modal with token:", token); // Debug
     setModalMode("add");
     setSelectedItem(null);
     setShowModal(true);
   };
 
   const handleEdit = (item) => {
-    console.log("Opening edit modal with token:", token); // Debug
     setModalMode("edit");
     setSelectedItem(item);
     setShowModal(true);
@@ -89,7 +86,6 @@ export default function AdminItem() {
     if (!result.isConfirmed) return;
 
     try {
-      console.log("Deleting item with token:", token); // Debug
       await axios.delete(`${API_BASE_URL}/${item.id}`, {
         headers: { Authorization: `Bearer ${token}` },
         withCredentials: true,
@@ -188,25 +184,14 @@ export default function AdminItem() {
             data={items.map((item) => ({
               ...item,
               actions: (
-                <div className="flex gap-2 justify-center">
-                  <ActionButton
-                    label="Edit"
-                    onClick={() => handleEdit(item)}
-                    variant="edit"
-                  />
-                  <ActionButton
-                    label="Hapus"
-                    onClick={() => handleDelete(item)}
-                    variant="delete"
-                  />
-                </div>
+                <RowActions onEdit={() => handleEdit(item)} onDelete={() => handleDelete(item)} />
               ),
             }))}
             columns={[
               { key: "name", label: "Nama" },
-              { key: "volume", label: "Volume" },
+              { key: "volume", label: "Volume", align: "right", numeric: true },
               { key: "satuan", label: "Satuan" },
-              { key: "harga_satuan", label: "Harga Satuan" },
+              { key: "harga_satuan", label: "Harga Satuan", align: "right", numeric: true },
             ]}
           />
         </div>

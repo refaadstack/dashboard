@@ -1,65 +1,76 @@
-import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { useState } from 'react';
+import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { useState } from "react";
+import { TbMenu2, TbX, TbLogout, TbBook2 } from "react-icons/tb";
 
 const Navbar = () => {
   const { user, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const toggleMenu = () => {
-    setMenuOpen(!menuOpen);
-  };
-
   return (
-    <nav className="bg-gray-800 text-white p-4 flex flex-wrap items-center justify-between">
-      <div className="flex items-center">
-        <Link to="/" className="mr-4 font-bold text-lg">Dashboard</Link>
+    <nav className="border-b border-gray-200 bg-white">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
+        <Link to="/" className="text-base font-bold text-gray-900">
+          BOQ Dashboard
+        </Link>
         <button
-          className="block md:hidden focus:outline-none"
-          onClick={toggleMenu}
+          className="rounded-lg p-2 text-gray-600 hover:bg-gray-100 md:hidden"
+          onClick={() => setMenuOpen(!menuOpen)}
           aria-label="Toggle menu"
         >
-          <svg
-            className="h-6 w-6 fill-current"
-            viewBox="0 0 24 24"
-          >
-            {menuOpen ? (
-              <path
-                fillRule="evenodd"
-                clipRule="evenodd"
-                d="M18.364 5.636a1 1 0 00-1.414-1.414L12 9.172 7.05 4.222a1 1 0 10-1.414 1.414L10.828 12l-5.192 5.192a1 1 0 101.414 1.414L12 14.828l4.95 4.95a1 1 0 001.414-1.414L13.172 12l5.192-5.192z"
-              />
-            ) : (
-              <path
-                fillRule="evenodd"
-                d="M4 5h16v2H4V5zm0 6h16v2H4v-2zm0 6h16v2H4v-2z"
-              />
-            )}
-          </svg>
+          {menuOpen ? <TbX className="h-5 w-5" /> : <TbMenu2 className="h-5 w-5" />}
         </button>
-      </div>
-
-      <div className={`w-full md:flex md:items-center md:w-auto ${menuOpen ? 'block' : 'hidden'}`}>
-        <div className="flex flex-col md:flex-row md:space-x-4">
-          {user?.roles === 'admin' && (
-            <Link to="/admin" className="block mt-2 md:mt-0 hover:underline">
+        <div className="hidden items-center gap-3 md:flex">
+          <Link to="/panduan" className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900">
+            <TbBook2 className="h-4 w-4" />
+            Panduan
+          </Link>
+          {user?.roles === "admin" && (
+            <Link to="/admin" className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900">
               Admin Panel
             </Link>
           )}
           {user ? (
             <button
               onClick={logout}
-              className="bg-red-500 px-3 py-1 rounded mt-2 md:mt-0"
+              className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700 active:translate-y-[1px]"
             >
+              <TbLogout className="h-4 w-4" />
               Logout
             </button>
           ) : (
-            <Link to="/login" className="block mt-2 md:mt-0 hover:underline">
+            <Link to="/login" className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900">
               Login
             </Link>
           )}
         </div>
       </div>
+      {menuOpen && (
+        <div className="space-y-1 border-t border-gray-200 px-4 py-3 md:hidden">
+          <Link to="/panduan" className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100">
+            <TbBook2 className="h-4 w-4" />
+            Panduan
+          </Link>
+          {user?.roles === "admin" && (
+            <Link to="/admin" className="block rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Admin Panel
+            </Link>
+          )}
+          {user ? (
+            <button
+              onClick={logout}
+              className="flex w-full items-center gap-2 rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white"
+            >
+              <TbLogout className="h-4 w-4" />
+              Logout
+            </button>
+          ) : (
+            <Link to="/login" className="block rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100">
+              Login
+            </Link>
+          )}
+        </div>
+      )}
     </nav>
   );
 };

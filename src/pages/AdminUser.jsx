@@ -5,6 +5,7 @@ import AdminNavbar from "../component/AdminNavbar.jsx";
 import FormModal from "../component/FormModal.jsx";
 import SearchableTable from "../component/SearchableTable.jsx";
 import ActionButton from "../component/ActionButton.jsx";
+import RowActions from "../component/RowActions.jsx";
 import Swal from "sweetalert2";
 import { useAuth } from "../context/AuthContext.jsx";
 
@@ -18,17 +19,14 @@ export default function AdminUser() {
   const [selectedUser, setSelectedUser] = useState(null);
 
   // Debug: cek token
-  console.log("AdminUser - Current token:", token);
 
   const fetchUsers = useCallback(async () => {
     try {
-      console.log("Fetching users with token:", token); // Debug
       const res = await axios.get(API_BASE_URL, {
         headers: { Authorization: `Bearer ${token}` },
         withCredentials: true,
       });
       const usersData = res.data?.data?.users || res.data || [];
-      console.log("Users fetched:", usersData); // Debug
       setUsers(Array.isArray(usersData) ? usersData : [usersData]);
     } catch (err) {
       console.error("Error fetching users:", err.response || err); // Debug
@@ -51,14 +49,12 @@ export default function AdminUser() {
   ];
 
   const handleAdd = () => {
-    console.log("Opening add modal with token:", token); // Debug
     setModalMode("add");
     setSelectedUser(null);
     setShowModal(true);
   };
 
   const handleEdit = (user) => {
-    console.log("Opening edit modal with token:", token); // Debug
     setModalMode("edit");
     setSelectedUser(user);
     setShowModal(true);
@@ -76,7 +72,6 @@ export default function AdminUser() {
     if (!result.isConfirmed) return;
 
     try {
-      console.log("Deleting user with token:", token); // Debug
       await axios.delete(`${API_BASE_URL}/${user.id}`, {
         headers: { Authorization: `Bearer ${token}` },
         withCredentials: true,
@@ -182,18 +177,12 @@ export default function AdminUser() {
                 </span>
               ),
               actions: (
-                <div className="flex gap-2 justify-center">
-                  <ActionButton
-                    label="Edit"
-                    onClick={() => handleEdit(user)}
-                    variant="edit"
-                  />
-                  <ActionButton
-                    label="Delete"
-                    onClick={() => handleDelete(user)}
-                    variant="delete"
-                  />
-                </div>
+                <RowActions
+                  onEdit={() => handleEdit(user)}
+                  onDelete={() => handleDelete(user)}
+                  editTitle="Edit"
+                  deleteTitle="Delete"
+                />
               ),
             }))}
             columns={[

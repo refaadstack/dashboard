@@ -1,6 +1,6 @@
 // src/component/ActionButton.jsx
 export default function ActionButton({ label, onClick, variant = "default" }) {
-  const baseClass = "px-3 py-1 rounded text-sm text-white";
+  const baseClass = "px-3 py-1.5 rounded-lg text-sm font-medium text-white transition-colors active:translate-y-[1px]";
   const variantClass = {
     default: "bg-gray-500 hover:bg-gray-600",
     edit: "bg-yellow-500 hover:bg-yellow-600",

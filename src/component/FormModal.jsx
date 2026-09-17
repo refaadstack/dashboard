@@ -25,7 +25,6 @@ export default function FormModal({
   // Gunakan token dari AuthContext sebagai fallback jika tidak ada token prop
   const finalToken = token || authToken;
 
-  console.log("FormModal - Using token:", finalToken); // Debug
 
   useEffect(() => {
     if (isOpen) {
@@ -79,17 +78,12 @@ export default function FormModal({
     if (typeof transformData === "function") {
       try {
         dataToSubmit = transformData(formData);
-      } catch (err) {
-        console.warn("TransformData error:", err.message);
+      } catch {
         return;
       }
     }
 
     try {
-      console.log("FormModal - Submitting with token:", finalToken); // Debug
-      console.log("FormModal - Endpoint:", endpoint); // Debug
-      console.log("FormModal - Method:", method); // Debug
-      console.log("FormModal - Data:", dataToSubmit); // Debug
 
       const config = {
         headers: {
@@ -105,11 +99,9 @@ export default function FormModal({
         await axios.post(endpoint, dataToSubmit, config);
       }
       
-      console.log("FormModal - Success!"); // Debug
       onSuccess?.();
     } catch (err) {
       console.error("FormModal - Error:", err.response || err); // Debug
-      console.log("FormModal - Error detail:", err.response?.data);
       onError?.(err.response?.data); // call onError with error data
     }
   };

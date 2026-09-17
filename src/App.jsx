@@ -1,6 +1,5 @@
 // src/App.jsx
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './component/ProtectedRoute';
 import AdminProtectedRoute from './component/AdminProtectedRoute';
 
@@ -14,10 +13,11 @@ import AdminPanel from './pages/AdminPanel';
 import AdminBoq from './pages/AdminBoq';
 import AdminUser from './pages/AdminUser';
 import Dashboard from './pages/Dashboard';
+import Panduan from './pages/Panduan';
+import AdminPengaturan from './pages/AdminPengaturan';
 
 function App() {
   return (
-    <AuthProvider>
       <Router>
         <div className="App">
           <Routes>
@@ -79,7 +79,16 @@ function App() {
                 </AdminProtectedRoute>
               } 
             />
-            <Route 
+            <Route
+              path="/admin/pengaturan"
+              element={
+                <AdminProtectedRoute>
+                  <AdminPengaturan />
+                </AdminProtectedRoute>
+              }
+            />
+
+            <Route
               path="/admin/users" 
               element={
                 <AdminProtectedRoute>
@@ -88,6 +97,15 @@ function App() {
               } 
             />
             
+            <Route
+              path="/panduan"
+              element={
+                <ProtectedRoute>
+                  <Panduan />
+                </ProtectedRoute>
+              }
+            />
+
             {/* Default redirect */}
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             
@@ -96,7 +114,6 @@ function App() {
           </Routes>
         </div>
       </Router>
-    </AuthProvider>
   );
 }
 
